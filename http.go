@@ -3,6 +3,7 @@ package doh
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -30,7 +31,10 @@ func (r *Resolver) exchangeHTTPS(ctx context.Context, q []byte) (a []byte, err e
 	}
 
 	resp, err := client.Do(req)
-	if err != nil {
+	if errors.Is(err, context.DeadlineExceeded) {
+		err = ErrTimeout
+		return
+	} else if err != nil {
 		return
 	}
 
